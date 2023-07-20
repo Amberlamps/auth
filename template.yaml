@@ -69,7 +69,7 @@ Resources:
   TokensPost:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: auth/dist/tokens
+      CodeUri: dist/tokens
       Handler: tokens-post.handler
       Events:
         ApiEvent:
@@ -85,7 +85,7 @@ Resources:
   MeGet:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: auth/dist/me
+      CodeUri: dist/me
       Handler: me-get.handler
       Events:
         ApiEvent:
@@ -101,7 +101,7 @@ Resources:
   LogoutPost:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: auth/dist/logout
+      CodeUri: dist/logout
       Handler: logout-post.handler
       Events:
         ApiEvent:
