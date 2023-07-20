@@ -1,0 +1,120 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  AppUrl:
+    Type: String
+  AuthUrl:
+    Type: String
+
+Globals:
+  Function:
+    Runtime: nodejs16.x
+    Environment:
+      Variables:
+        TABLE_NAME: !Sub ${AWS::StackName}-table
+        APP_URL: !Ref AppUrl
+        AUTH_URL: !Ref AuthUrl
+  
+Resources:
+
+  DynamoDbTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-table
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+        - AttributeName: data1
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      LocalSecondaryIndexes:
+        - IndexName: lsi1
+          KeySchema:
+            - AttributeName: pk
+              KeyType: HASH
+            - AttributeName: data1
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      GlobalSecondaryIndexes:
+        - IndexName: gsi1
+          KeySchema:
+            - AttributeName: data1
+              KeyType: HASH
+            - AttributeName: pk
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  AuthApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'POST, GET, OPTIONS, DELETE, PUT, PATCH'"
+        AllowOrigin: !Sub 
+          - "'${AppUrl}'"
+          - AppUrl: !Ref AppUrl
+        AllowHeaders: "'Origin, X-Requested-With, Content-Type, Accept, Auhtorization'"
+        AllowCredentials: true
+
+  TokensPost:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: auth/dist/tokens
+      Handler: tokens-post.handler
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /tokens
+            Method: post
+            RestApiId: !Ref AuthApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub ${AWS::StackName}-table
+
+  MeGet:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: auth/dist/me
+      Handler: me-get.handler
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /me
+            Method: get
+            RestApiId: !Ref AuthApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub ${AWS::StackName}-table
+
+  LogoutPost:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: auth/dist/logout
+      Handler: logout-post.handler
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /logout
+            Method: post
+            RestApiId: !Ref AuthApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub ${AWS::StackName}-table
+
+Outputs:
+  AuthApi:
+    Description: "API Gateway endpoint URL for Prod stage for AuthApi"
+    Value: !Sub "https://${AuthApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"
