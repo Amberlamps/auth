@@ -16,15 +16,16 @@ Create your own authentication api with this boilerplate.
 1. Clone this repository
 2. Run `pnpm install`
 3. Run `pnpm esbuild`
-4. Deploy api to AWS with AWS SAM:
+4. Run `sam build`
+5. Deploy api to AWS with AWS SAM:
 
 ```
 sam deploy \
-  --stack-name my-auth-api \
+  --stack-name bot41-auth-api \
   --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
   --region eu-central-1 \
-  --profile my-profil
-  --s3-bucket my-application-bucket \
-  --s3-prefix my-auth-api \
-  --parameter-overrides ParameterKey=AppUrl,ParameterValue=https://app.example.com ParameterKey=AuthUrl,ParameterValue=api.example.com
+  --profile feedme \
+  --s3-bucket bot41-eu-central-1 \
+  --s3-prefix auth-api \
+  --parameter-overrides ParameterKey=AppUrl,ParameterValue=https://bot41.com ParameterKey=AuthUrl,ParameterValue=api.bot41.com
 ```
