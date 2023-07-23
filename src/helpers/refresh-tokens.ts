@@ -2,11 +2,12 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import { getStringFromEnv } from "./get-env-variables";
 
 const authUrl = getStringFromEnv("AUTH_URL");
-const cookieName = process.env["COOKIE_NAME"] || "r_id";
-const parsedExpires = Number.parseInt(process.env["COOKIE_EXPIRES"] || "", 10);
-const cookieExpires = isNaN(parsedExpires)
-    ? 60 * 60 * 24 * 365 * 10
-    : parsedExpires;
+const cookieName = getStringFromEnv("COOKIE_NAME");
+const envCookieExpires = getStringFromEnv("COOKIE_EXPIRES_IN");
+const cookieExpires = Number.parseInt(envCookieExpires, 10);
+if (isNaN(cookieExpires)) {
+    throw new Error("Invalid COOKIE_EXPIRES_IN");
+}
 
 const cookieParser = (
     cookieHeader: string,

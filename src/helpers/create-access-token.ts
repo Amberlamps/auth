@@ -1,4 +1,4 @@
-import { TokenDb } from "../../types/tokens";
+import { TokenDb } from "../types/tokens";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = "wytX8PJhDqZNJ17x76vridr47xng2K1ntzjUDCpXsxfCXExB7U";

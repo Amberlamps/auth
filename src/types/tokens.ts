@@ -6,13 +6,6 @@ const tokenGoogleSchema = z.object({
 });
 export type TokenGoogle = z.infer<typeof tokenGoogleSchema>;
 
-export const googleProfileSchema = z.object({
-    id: z.string(),
-    email: z.string(),
-    name: z.string(),
-    picture: z.string().optional(),
-});
-
 export const tokenPostSchema = z.union([
     z.object({
         type: z.literal("access-token"),

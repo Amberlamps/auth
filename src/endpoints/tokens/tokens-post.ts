@@ -1,14 +1,43 @@
-import { tokenPostSchema } from "../../types/tokens";
-import validateSchema from "../../helpers/validate-schema";
 import middlewares from "../../helpers/middlewares";
-import getTokenByCookie from "./get-token-by-cookie";
-import getTokenByGoogle from "./get-token-by-google";
+import { getRefreshToken } from "../../helpers/refresh-tokens";
+import {
+    notFound,
+    ok,
+    serverError,
+    unauthorized,
+} from "../../helpers/http-responses";
+import getRecord from "../../helpers/dynamo-db/get-record";
+import { TokenResponse, tokenDbSchema } from "../../types/tokens";
+import createAccessToken from "../../helpers/create-access-token";
 
 export const handler = middlewares(async (event) => {
-    const data = validateSchema(tokenPostSchema, event.body, "BAD_REQUEST");
-    if (data.type === "google") {
-        return getTokenByGoogle(data);
-    } else {
-        return getTokenByCookie(event);
+    const refreshToken = getRefreshToken(event);
+    if (!refreshToken) {
+        return unauthorized({ message: "Missing cookies" });
     }
+    const item = await getRecord({
+        Key: {
+            pk: `TOKEN#${refreshToken}`,
+            sk: "TOKEN",
+        },
+    });
+
+    if (!item) {
+        return notFound();
+    }
+
+    const tokenValidation = tokenDbSchema.safeParse(item);
+
+    if (!tokenValidation.success) {
+        return serverError();
+    }
+
+    return ok<TokenResponse>({
+        accessToken: createAccessToken(tokenValidation.data),
+        user: {
+            name: tokenValidation.data.name,
+            userId: tokenValidation.data.userId,
+            picture: tokenValidation.data.picture,
+        },
+    });
 });

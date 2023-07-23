@@ -6,6 +6,18 @@ Parameters:
     Type: String
   AuthUrl:
     Type: String
+  GoogleClientId:
+    Type: String
+    Default: not_set
+  GoogleClientSecret:
+    Type: String
+    Default: not_set
+  CookieName:
+    Type: String
+    Default: 'r_id'
+  CookieExpiresIn:
+    Type: String
+    Default: '315360000'
 
 Globals:
   Function:
@@ -15,6 +27,8 @@ Globals:
         TABLE_NAME: !Sub ${AWS::StackName}-table
         APP_URL: !Ref AppUrl
         AUTH_URL: !Ref AuthUrl
+        COOKIE_NAME: !Ref CookieName
+        COOKIE_EXPIRES_IN: !Ref CookieExpiresIn
   
 Resources:
 
@@ -76,6 +90,26 @@ Resources:
           Type: Api
           Properties:
             Path: /tokens
+            Method: post
+            RestApiId: !Ref AuthApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub ${AWS::StackName}-table
+
+  LoginPost:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/login
+      Handler: login-post.handler
+      Environment:
+        Variables:
+          GOOGLE_CLIENT_ID: !Ref GoogleClientId
+          GOOGLE_CLIENT_SECRET: !Ref GoogleClientSecret
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /login
             Method: post
             RestApiId: !Ref AuthApi
       Policies:
