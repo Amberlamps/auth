@@ -18,6 +18,9 @@ Parameters:
   CookieExpiresIn:
     Type: String
     Default: '315360000'
+  TokenExpiresIn:
+    Type: String
+    Default: 15m
 
 Globals:
   Function:
@@ -29,6 +32,7 @@ Globals:
         AUTH_URL: !Ref AuthUrl
         COOKIE_NAME: !Ref CookieName
         COOKIE_EXPIRES_IN: !Ref CookieExpiresIn
+        TOKEN_EXPIRES_IN: !Ref TokenExpiresIn
   
 Resources:
 
@@ -85,6 +89,9 @@ Resources:
     Properties:
       CodeUri: dist/tokens
       Handler: tokens-post.handler
+      Environment:
+        Variables:
+          JWKS_SECRET_NAME: !Sub ${AWS::StackName}-jwks
       Events:
         ApiEvent:
           Type: Api
@@ -95,6 +102,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Sub ${AWS::StackName}-table
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref JwksSecret
 
   LoginPost:
     Type: AWS::Serverless::Function
@@ -105,6 +114,7 @@ Resources:
         Variables:
           GOOGLE_CLIENT_ID: !Ref GoogleClientId
           GOOGLE_CLIENT_SECRET: !Ref GoogleClientSecret
+          JWKS_SECRET_NAME: !Sub ${AWS::StackName}-jwks
       Events:
         ApiEvent:
           Type: Api
@@ -115,6 +125,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Sub ${AWS::StackName}-table
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref JwksSecret
 
   MeGet:
     Type: AWS::Serverless::Function
@@ -147,6 +159,37 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Sub ${AWS::StackName}-table
+
+  JwksRotationFunc:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/jwks-rotation
+      Handler: jwks-rotation.handler
+      FunctionName: !Sub ${AWS::StackName}-jwks-rotation
+      Policies: 
+        - AWSSecretsManagerRotationPolicy:
+            FunctionName: !Sub ${AWS::StackName}-jwks-rotation
+
+  JwksLambdaInvokePermission:
+      Type: AWS::Lambda::Permission
+      DependsOn: JwksRotationFunc
+      Properties:
+        FunctionName: !GetAtt JwksRotationFunc.Arn
+        Action: lambda:InvokeFunction
+        Principal: 'secretsmanager.amazonaws.com'
+
+  JwksSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub ${AWS::StackName}-jwks
+
+  JwksRotationSchedule:
+    Type: AWS::SecretsManager::RotationSchedule
+    Properties:
+      SecretId: !Ref JwksSecret
+      RotationLambdaARN: !GetAtt JwksRotationFunc.Arn
+      RotationRules:
+        AutomaticallyAfterDays: 30
 
 Outputs:
   AuthApi:

@@ -12,6 +12,7 @@ Create your own authentication api with this boilerplate.
 | GoogleClientSecret | (Yes) | Required when you expect clients to login with type="google" | |
 | CookieName | No | Name of the cookie | r_id |
 | CookieExpiresIn | No | Expiration time of the cookie | 315360000 (10 years) |
+| TokenExpiresIn | No | Expiration time of the access token | 15m (15 minutes; https://github.com/vercel/ms) |
 
 ## Deployment
 

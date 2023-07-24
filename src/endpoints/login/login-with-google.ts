@@ -1,5 +1,5 @@
 import { APIGatewayProxyResult } from "aws-lambda";
-import { Login } from "../../types/login";
+import { LoginGoogle } from "../../types/login";
 import { ok, serverError } from "../../helpers/http-responses";
 import { OAuth2Client } from "google-auth-library";
 import got from "got";
@@ -10,7 +10,9 @@ import persistTokenDb from "../../helpers/persist-token-db";
 import createAccessToken from "../../helpers/create-access-token";
 import { setRefreshToken } from "../../helpers/refresh-tokens";
 
-const loginWithGoogle = async (data: Login): Promise<APIGatewayProxyResult> => {
+const loginWithGoogle = async (
+    data: LoginGoogle,
+): Promise<APIGatewayProxyResult> => {
     const clientId = process.env["GOOGLE_CLIENT_ID"];
     const clientSecret = process.env["GOOGLE_CLIENT_SECRET"];
     if (!clientId || !clientSecret) {
@@ -23,13 +25,13 @@ const loginWithGoogle = async (data: Login): Promise<APIGatewayProxyResult> => {
         "postmessage",
     );
     const { tokens } = await oAuth2Client.getToken(data.code);
-    const { access_token: accessToken } = tokens;
+    const { access_token: googleAccessToken } = tokens;
 
     const response = await got(
-        `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${accessToken}`,
+        `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${googleAccessToken}`,
         {
             headers: {
-                Authorization: `Bearer ${accessToken}`,
+                Authorization: `Bearer ${googleAccessToken}`,
                 Accept: "application/json",
             },
         },
@@ -43,9 +45,10 @@ const loginWithGoogle = async (data: Login): Promise<APIGatewayProxyResult> => {
         picture,
     };
     const id = await persistTokenDb(token);
+    const accessToken = await createAccessToken(token);
     return ok<TokenResponse>(
         {
-            accessToken: createAccessToken(token),
+            accessToken,
             user: token,
         },
         {

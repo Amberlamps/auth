@@ -1,8 +1,8 @@
-@authUrl = https://g3zdf7e4lb.execute-api.eu-central-1.amazonaws.com/prod
+@authUrl = https://q8fs94a4o8.execute-api.eu-central-1.amazonaws.com/prod
 
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJmZTYzMzdkMzU2ZDRjMDRmOWQ5YzMyYTVhZmE5ZWNmYTY2OWI2MjBhNjlmMmIwMmQ0ODdjNDNiNzJkZjVkMGUyIiwibmFtZSI6IkFsZXhhbmRlciBCZWhyZW5zIiwiaXNTdXBlckFkbWluIjp0cnVlLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUFjSFR0ZkVqWVJQMFc0S01NWDlIMDljNkt0b2dpZ2R1bDNodGlVMkV1Nk89czk2LWMiLCJpYXQiOjE2ODU2MjEwMzksImV4cCI6MTY4NTYyMTkzOX0.5xX0j9tAbICiUAst_tXqj-AllOy2n63vdqlIRm7bboo
 
-@userCookie = 1ddce290e1dc8dfae7a487e0d144a5264b86e0f44a06edbfe3fecc1c02b71e61
+@userCookie = a48ee25f070f62c037eacfd27722bc810be46a7e51a94c4b7d33272a1fa8a2a1
 
 ###
 

@@ -32,8 +32,9 @@ export const handler = middlewares(async (event) => {
         return serverError();
     }
 
+    const accessToken = await createAccessToken(tokenValidation.data);
     return ok<TokenResponse>({
-        accessToken: createAccessToken(tokenValidation.data),
+        accessToken,
         user: {
             name: tokenValidation.data.name,
             userId: tokenValidation.data.userId,
