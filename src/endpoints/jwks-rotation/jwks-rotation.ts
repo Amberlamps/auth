@@ -1,28 +1,82 @@
 import { SecretsManagerRotationHandler } from "aws-lambda";
-import * as AWS from "@aws-sdk/client-secrets-manager";
-import { toPairs } from "lodash";
-import * as jose from "jose";
+import {
+    SecretsManagerClient,
+    GetSecretValueCommand,
+    DescribeSecretCommand,
+    PutSecretValueCommand,
+    ResourceNotFoundException,
+    UpdateSecretVersionStageCommand,
+} from "@aws-sdk/client-secrets-manager";
+import {
+    LambdaClient,
+    GetFunctionConfigurationCommand,
+    UpdateFunctionConfigurationCommand,
+} from "@aws-sdk/client-lambda";
+import toPairs from "lodash/toPairs";
 import { getStringFromEnv } from "../../helpers/get-env-variables";
 import { JwkStored, JwksStored, jwksStoredSchema } from "../../types/jwks";
 import ms from "ms";
+import {
+    createJwkStoredKey,
+    convertStoredToJwks,
+} from "./create-jwk-stored-key";
 
 const region = getStringFromEnv("AWS_REGION");
-const client = new AWS.SecretsManager({ region });
-const algorithm = "RS256";
+const client = new SecretsManagerClient({ region });
 const tokenExpiresIn = getStringFromEnv("TOKEN_EXPIRES_IN");
 const tokenExpiresInMs = ms(tokenExpiresIn);
+const functionName = getStringFromEnv("FUNCTION_NAME");
+const lambdaClient = new LambdaClient({ region });
 
-const randomString = (length: number): string => {
-    let text = "";
-    const possible =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    for (let i = 0; i < length; i++)
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-    return text;
+const getCurrentValue = async (
+    secretId: string,
+): Promise<string | undefined> => {
+    try {
+        const currentValue = await client.send(
+            new GetSecretValueCommand({
+                SecretId: secretId,
+                VersionStage: "AWSCURRENT",
+            }),
+        );
+        return currentValue.SecretString as string;
+    } catch {
+        return undefined;
+    }
+};
+
+const updateExistingKeys = (
+    secretString: string | undefined,
+): Array<JwkStored> => {
+    if (!secretString) {
+        return [];
+    }
+
+    const secretValidation = jwksStoredSchema.safeParse(
+        JSON.parse(secretString),
+    );
+    if (!secretValidation.success) {
+        console.error(secretValidation.error);
+        throw new Error("Invalid secret string.");
+    }
+    const keys = secretValidation.data.keys
+        .filter(
+            (key) =>
+                key.status === "current" ||
+                (key.status === "previous" &&
+                    Date.now() - key.createdAt < tokenExpiresInMs),
+        )
+        .map((key) => ({
+            ...key,
+            status: "previous",
+        })) as Array<JwkStored>;
+
+    return keys;
 };
 
 export const handler: SecretsManagerRotationHandler = async (event) => {
-    const metadata = await client.describeSecret({ SecretId: event.SecretId });
+    const metadata = await client.send(
+        new DescribeSecretCommand({ SecretId: event.SecretId }),
+    );
     if (!metadata.RotationEnabled) {
         throw new Error("Secret rotation is not enabled for this secret.");
     }
@@ -46,62 +100,50 @@ export const handler: SecretsManagerRotationHandler = async (event) => {
         );
     }
     if (event.Step === "createSecret") {
-        const currentValue = await client.getSecretValue({
-            SecretId: event.SecretId,
-            VersionStage: "AWSCURRENT",
-        });
+        const currentValue = await getCurrentValue(event.SecretId);
         try {
-            await client.getSecretValue({
-                SecretId: event.SecretId,
-                VersionStage: "AWSPENDING",
-                VersionId: event.ClientRequestToken,
-            });
+            await client.send(
+                new GetSecretValueCommand({
+                    SecretId: event.SecretId,
+                    VersionStage: "AWSPENDING",
+                    VersionId: event.ClientRequestToken,
+                }),
+            );
         } catch (error) {
-            if (error instanceof AWS.ResourceNotFoundException) {
-                const secretValidation = jwksStoredSchema.safeParse(
-                    JSON.parse(currentValue.SecretString as string),
-                );
-                if (!secretValidation.success) {
-                    console.error(secretValidation.error);
-                    throw new Error("Invalid secret string.");
-                }
-                const { publicKey, privateKey } = await jose.generateKeyPair(
-                    algorithm,
-                );
-                const key = (await jose.exportJWK(publicKey)) as {
-                    kty: string;
-                    e: string;
-                    n: string;
-                };
-                const jwkStoredKey: JwkStored = {
-                    ...key,
-                    kid: randomString(20),
-                    alg: algorithm,
-                    createdAt: Date.now(),
-                    privateKey: await jose.exportPKCS8(privateKey),
-                    status: "current",
-                    use: "sig",
-                };
-                const keys = secretValidation.data.keys
-                    .filter(
-                        (key) =>
-                            key.status === "current" ||
-                            (key.status === "previous" &&
-                                Date.now() - key.createdAt < tokenExpiresInMs),
-                    )
-                    .map((key) => ({
-                        ...key,
-                        status: "previous",
-                    })) as JwkStored[];
+            if (error instanceof ResourceNotFoundException) {
+                const keys = updateExistingKeys(currentValue);
+                const jwkStoredKey = await createJwkStoredKey();
                 const jwksStored: JwksStored = {
                     keys: [...keys, jwkStoredKey],
                 };
-                await client.putSecretValue({
-                    SecretId: event.SecretId,
-                    ClientRequestToken: event.ClientRequestToken,
-                    SecretString: JSON.stringify(jwksStored),
-                    VersionStages: ["AWSPENDING"],
-                });
+                await client.send(
+                    new PutSecretValueCommand({
+                        SecretId: event.SecretId,
+                        ClientRequestToken: event.ClientRequestToken,
+                        SecretString: JSON.stringify(jwksStored),
+                        VersionStages: ["AWSPENDING"],
+                    }),
+                );
+                const configuration = await lambdaClient.send(
+                    new GetFunctionConfigurationCommand({
+                        FunctionName: functionName,
+                    }),
+                );
+                const envVars = configuration.Environment?.Variables || {};
+                await lambdaClient.send(
+                    new UpdateFunctionConfigurationCommand({
+                        FunctionName: functionName,
+                        Environment: {
+                            Variables: {
+                                ...envVars,
+                                JWKS: JSON.stringify(
+                                    await convertStoredToJwks(jwksStored),
+                                ),
+                            },
+                        },
+                    }),
+                );
+
                 return;
             }
             throw error;
@@ -114,12 +156,14 @@ export const handler: SecretsManagerRotationHandler = async (event) => {
             throw new Error("No current version found.");
         }
         if (currentVersion[0] !== event.ClientRequestToken) {
-            await client.updateSecretVersionStage({
-                SecretId: event.SecretId,
-                VersionStage: "AWSCURRENT",
-                MoveToVersionId: event.ClientRequestToken,
-                RemoveFromVersionId: currentVersion[0],
-            });
+            await client.send(
+                new UpdateSecretVersionStageCommand({
+                    SecretId: event.SecretId,
+                    VersionStage: "AWSCURRENT",
+                    MoveToVersionId: event.ClientRequestToken,
+                    RemoveFromVersionId: currentVersion[0],
+                }),
+            );
         }
     }
 };

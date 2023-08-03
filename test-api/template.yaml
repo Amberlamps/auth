@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+  
+Resources:
+
+  TestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Auth:
+        DefaultAuthorizer: ImportedAuthorizer
+        Authorizers:
+          ImportedAuthorizer:
+            FunctionArn: !ImportValue "bot41-auth-api-dev-authorizer"
+
+  TestEndpoint:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      CodeUri: dist
+      Handler: endpoint.handler
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: get
+            RestApiId: !Ref TestApi
+
+Outputs:
+  TestApi:
+    Description: "API Gateway endpoint URL for Prod stage for TestApi"
+    Value: !Sub "https://${TestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"

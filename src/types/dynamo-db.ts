@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { QueryCommandInput } from "@aws-sdk/lib-dynamodb";
 import { unixSchema } from "./base";
 
 export const dynamoDBRecordBaseSchema = z.object({
@@ -20,8 +20,11 @@ export type ClientFunction<Input, Output> = (
 ) => Promise<Output>;
 
 export type QueryRecordsParams<T = string> = Omit<
-    DocumentClient.QueryInput,
+    QueryCommandInput,
     "TableName"
 > & {
     fields?: Array<T>;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Key = Record<string, any>;

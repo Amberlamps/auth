@@ -15,8 +15,9 @@ export const jwksSchema = z.object({
 });
 export type Jwks = z.infer<typeof jwksSchema>;
 
-export const jwkStoredSchema = jwkSchema.extend({
+export const jwkStoredSchema = jwkSchema.pick({ kid: true, alg: true }).extend({
     privateKey: z.string(),
+    publicKey: z.string(),
     createdAt: z.number(),
     status: z.enum(["current", "previous"]),
 });

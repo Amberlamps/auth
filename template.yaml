@@ -21,6 +21,8 @@ Parameters:
   TokenExpiresIn:
     Type: String
     Default: 15m
+  AuthorizerName:
+    Type: String
 
 Globals:
   Function:
@@ -160,15 +162,43 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Sub ${AWS::StackName}-table
 
+  Authorizer:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/authorizer
+      Handler: authorizer.handler
+      FunctionName: !Sub ${AWS::StackName}-authorizer
+      Environment:
+        Variables:
+          JWKS_SECRET_NAME: !Sub ${AWS::StackName}-jwks
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref JwksSecret
+
   JwksRotationFunc:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: dist/jwks-rotation
       Handler: jwks-rotation.handler
+      Timeout: 30
+      Environment:
+        Variables:
+          FUNCTION_NAME: !Sub ${AWS::StackName}-authorizer
       FunctionName: !Sub ${AWS::StackName}-jwks-rotation
       Policies: 
         - AWSSecretsManagerRotationPolicy:
             FunctionName: !Sub ${AWS::StackName}-jwks-rotation
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: lambda:InvokeFunction
+              Resource: !GetAtt Authorizer.Arn
+            - Effect: Allow
+              Action: lambda:GetFunctionConfiguration
+              Resource: !GetAtt Authorizer.Arn
+            - Effect: Allow
+              Action: lambda:UpdateFunctionConfiguration
+              Resource: !GetAtt Authorizer.Arn
 
   JwksLambdaInvokePermission:
       Type: AWS::Lambda::Permission
@@ -195,3 +225,9 @@ Outputs:
   AuthApi:
     Description: "API Gateway endpoint URL for Prod stage for AuthApi"
     Value: !Sub "https://${AuthApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+
+  AuthorizerArn:
+    Description: "Authorizer ARN"
+    Value: !GetAtt Authorizer.Arn
+    Export:
+      Name: !Ref AuthorizerName

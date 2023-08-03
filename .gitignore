@@ -54,3 +54,5 @@ out
 .aws-sam
 
 commands.md
+
+secret.json

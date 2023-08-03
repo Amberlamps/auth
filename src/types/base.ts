@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import * as z from "zod";
-import { parseInt, isNaN } from "lodash";
+import parseInt from "lodash/parseInt";
+import isNaN from "lodash/isNaN";
 
 function getUnixTime(date: string | number): number | undefined {
     const time = new Date(

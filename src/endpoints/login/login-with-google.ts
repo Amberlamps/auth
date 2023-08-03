@@ -1,7 +1,7 @@
 import { APIGatewayProxyResult } from "aws-lambda";
 import { LoginGoogle } from "../../types/login";
 import { ok, serverError } from "../../helpers/http-responses";
-import { OAuth2Client } from "google-auth-library";
+import { OAuth2Client } from "google-auth-library/build/src/auth/oauth2client";
 import got from "got";
 import { TokenDb, TokenResponse } from "../../types/tokens";
 import { googleProfileSchema } from "../../types/google";

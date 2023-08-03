@@ -1,6 +1,6 @@
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { QueryCommand, QueryCommandInput } from "@aws-sdk/lib-dynamodb";
 import { getStringFromEnv } from "../get-env-variables";
-import { QueryRecordsParams } from "../../types/dynamo-db";
+import { Key, QueryRecordsParams } from "../../types/dynamo-db";
 import getDocumentClient from "./get-document-client";
 import { createPageToken } from "./page-token";
 import projectionWrapper from "./projection-wrapper";
@@ -9,7 +9,7 @@ const dynamodbTable = getStringFromEnv("TABLE_NAME");
 
 interface PaginateRecordsResult {
     records: Array<unknown>;
-    LastEvaluatedKey?: DocumentClient.Key;
+    LastEvaluatedKey?: Key;
 }
 
 type PaginateRecords = (
@@ -20,7 +20,7 @@ type PaginateRecords = (
 const paginateRecords: PaginateRecords = async (params, tempItems = []) => {
     const { fields, ...restParams } = params;
     const projections = projectionWrapper(fields);
-    const query: DocumentClient.QueryInput = {
+    const query: QueryCommandInput = {
         ...restParams,
         TableName: dynamodbTable,
     };
@@ -31,9 +31,8 @@ const paginateRecords: PaginateRecords = async (params, tempItems = []) => {
         };
         query.ProjectionExpression = projections.ProjectionExpression;
     }
-    const { Items: newItems, LastEvaluatedKey } = await getDocumentClient()
-        .query(query)
-        .promise();
+    const { Items: newItems, LastEvaluatedKey } =
+        await getDocumentClient().send(new QueryCommand(query));
     const items = [...tempItems, ...(newItems || [])];
     return params.Limit && items.length < params.Limit && LastEvaluatedKey
         ? paginateRecords(

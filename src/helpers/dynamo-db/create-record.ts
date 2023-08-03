@@ -1,5 +1,8 @@
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
-
+import {
+    PutCommand,
+    PutCommandInput,
+    PutCommandOutput,
+} from "@aws-sdk/lib-dynamodb";
 import { ClientFunction, DynamoDBRecord } from "../../types/dynamo-db";
 import { getStringFromEnv } from "../get-env-variables";
 import getDocumentClient from "./get-document-client";
@@ -7,11 +10,11 @@ import getDocumentClient from "./get-document-client";
 const dynamodbTable = getStringFromEnv("TABLE_NAME");
 
 const createRecord: ClientFunction<
-    Omit<DocumentClient.PutItemInput, "Item"> & { Item: DynamoDBRecord },
-    DocumentClient.PutItemOutput
+    Omit<PutCommandInput, "Item"> & { Item: DynamoDBRecord },
+    PutCommandOutput
 > = (params) =>
-    getDocumentClient()
-        .put({ ...params, TableName: dynamodbTable })
-        .promise();
+    getDocumentClient().send(
+        new PutCommand({ ...params, TableName: dynamodbTable }),
+    );
 
 export default createRecord;

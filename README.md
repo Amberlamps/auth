@@ -13,6 +13,7 @@ Create your own authentication api with this boilerplate.
 | CookieName | No | Name of the cookie | r_id |
 | CookieExpiresIn | No | Expiration time of the cookie | 315360000 (10 years) |
 | TokenExpiresIn | No | Expiration time of the access token | 15m (15 minutes; https://github.com/vercel/ms) |
+| AuthorizerName | Yes | Name of the exported authorizer function | bot41-auth-api-dev-authorizer |
 
 ## Deployment
 
@@ -32,7 +33,7 @@ sam deploy \
   --profile feedme \
   --s3-bucket bot41-eu-central-1 \
   --s3-prefix auth-api-dev \
-  --parameter-overrides ParameterKey=AppUrl,ParameterValue=http://localhost:3000 ParameterKey=AuthUrl,ParameterValue=api.bot41.com ParameterKey=GoogleClientId,ParameterValue=xxx.apps.googleusercontent.com ParameterKey=GoogleClientSecret,ParameterValue=xxx
+  --parameter-overrides ParameterKey=AppUrl,ParameterValue=http://localhost:3000 ParameterKey=AuthUrl,ParameterValue=api.bot41.com ParameterKey=GoogleClientId,ParameterValue=xxx.apps.googleusercontent.com ParameterKey=GoogleClientSecret,ParameterValue=xxx ParameterKey=AuthorizerName,ParameterValue=bot41-auth-api-dev-authorizer
 ```
 
 ** Production **

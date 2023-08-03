@@ -1,10 +1,17 @@
-import * as DynamoDb from "aws-sdk/clients/dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { getStringFromEnv } from "../get-env-variables";
 
-let client: DynamoDb.DocumentClient | null = null;
+let client: DynamoDBDocumentClient | null = null;
+const region = getStringFromEnv("AWS_REGION");
 
-const getDocumentClient = (): DynamoDb.DocumentClient => {
+const getDocumentClient = (): DynamoDBDocumentClient => {
     if (!client) {
-        client = new DynamoDb.DocumentClient();
+        client = DynamoDBDocumentClient.from(
+            new DynamoDBClient({
+                region,
+            }),
+        );
     }
     return client;
 };

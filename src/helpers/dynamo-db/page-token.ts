@@ -1,15 +1,13 @@
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { Key } from "../../types/dynamo-db";
 
-export const createPageToken = (pageToken: DocumentClient.Key): string =>
+export const createPageToken = (pageToken: Key): string =>
     Buffer.from(JSON.stringify(pageToken)).toString("base64");
 
-export const getPageToken = (
-    pageToken: string,
-): DocumentClient.Key | undefined => {
+export const getPageToken = (pageToken: string): Key | undefined => {
     try {
         return JSON.parse(
             Buffer.from(decodeURIComponent(pageToken), "base64").toString(),
-        ) as DocumentClient.Key;
+        ) as Key;
     } catch (error) {
         console.log(error);
         return undefined;

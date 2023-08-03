@@ -1,5 +1,4 @@
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { fromPairs } from "lodash";
+import fromPairs from "lodash/fromPairs";
 import { dynamoDBRecordBaseSchema } from "../../types/dynamo-db";
 
 const baseKeys = Object.keys(dynamoDBRecordBaseSchema.shape);
@@ -8,8 +7,8 @@ const projectionWrapper = (
     fields?: Array<string>,
 ):
     | {
-          ExpressionAttributeNames: DocumentClient.ExpressionAttributeNameMap;
-          ProjectionExpression: DocumentClient.ProjectionExpression;
+          ExpressionAttributeNames: Record<string, string>;
+          ProjectionExpression: string;
       }
     | undefined => {
     if (fields && fields.length > 0) {
