@@ -48,3 +48,41 @@ sam deploy \
   --s3-prefix auth-api \
   --parameter-overrides ParameterKey=AppUrl,ParameterValue=https://bot41.com ParameterKey=AuthUrl,ParameterValue=api.bot41.com
 ```
+
+## Integration
+
+### Backend
+
+The contents of the user token is described as:
+
+```typescript
+type User = {
+  userId: string;
+  name?: string;
+  picture?: string;
+}
+```
+
+The user object is stored in the authorizer context:
+
+```typescript
+event.requestContext.authorizer.user
+```
+
+A helper function for backend endpoint could look like this:
+
+```typescript
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import * as z from "zod";
+
+const getUser = (event: APIGatewayProxyEvent) => {
+  const user = z
+    .object({
+        userId: z.string(),
+        name: z.string().optional(),
+        picture: z.string().optional(),
+    })
+    .parse(JSON.parse(event.requestContext.authorizer?.["user"] as string));
+  return user;
+}
+```
