@@ -36,7 +36,7 @@ sam deploy \
   --parameter-overrides ParameterKey=AppUrl,ParameterValue=http://localhost:3000 ParameterKey=AuthUrl,ParameterValue=api.bot41.com ParameterKey=GoogleClientId,ParameterValue=xxx.apps.googleusercontent.com ParameterKey=GoogleClientSecret,ParameterValue=xxx ParameterKey=AuthorizerName,ParameterValue=bot41-auth-api-dev-authorizer
 ```
 
-** Production **
+**Production**
 
 ```
 sam deploy \
@@ -69,7 +69,7 @@ The user object is stored in the authorizer context:
 event.requestContext.authorizer.user
 ```
 
-A helper function for backend endpoint could look like this:
+A helper function for backend endpoints could look like this:
 
 ```typescript
 import { APIGatewayProxyEvent } from 'aws-lambda';
