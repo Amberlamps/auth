@@ -2,6 +2,14 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
 Parameters:
+  EnvType:
+    Description: Environment type.
+    Default: development
+    Type: String
+    AllowedValues:
+      - production
+      - development
+    ConstraintDescription: Must specify production or development
   AppUrl:
     Type: String
   AuthUrl:
@@ -23,13 +31,24 @@ Parameters:
     Default: 15m
   AuthorizerName:
     Type: String
+  RegionalCertificateArn:
+    Type: String
+    Description: Arn of the regional certificate
+    Default: not_set_in_development
+  TableName:
+    Type: String
+
+Conditions:
+  CreateProdResources: !Equals 
+    - !Ref EnvType
+    - production
 
 Globals:
   Function:
     Runtime: nodejs16.x
     Environment:
       Variables:
-        TABLE_NAME: !Sub ${AWS::StackName}-table
+        TABLE_NAME: !Ref TableName
         APP_URL: !Ref AppUrl
         AUTH_URL: !Ref AuthUrl
         COOKIE_NAME: !Ref CookieName
@@ -37,43 +56,6 @@ Globals:
         TOKEN_EXPIRES_IN: !Ref TokenExpiresIn
   
 Resources:
-
-  DynamoDbTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub ${AWS::StackName}-table
-      AttributeDefinitions:
-        - AttributeName: pk
-          AttributeType: S
-        - AttributeName: sk
-          AttributeType: S
-        - AttributeName: data1
-          AttributeType: S
-      KeySchema:
-        - AttributeName: pk
-          KeyType: HASH
-        - AttributeName: sk
-          KeyType: RANGE
-      BillingMode: PAY_PER_REQUEST
-      LocalSecondaryIndexes:
-        - IndexName: lsi1
-          KeySchema:
-            - AttributeName: pk
-              KeyType: HASH
-            - AttributeName: data1
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-      GlobalSecondaryIndexes:
-        - IndexName: gsi1
-          KeySchema:
-            - AttributeName: data1
-              KeyType: HASH
-            - AttributeName: pk
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-
   AuthApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -85,6 +67,27 @@ Resources:
           - AppUrl: !Ref AppUrl
         AllowHeaders: "'Origin, X-Requested-With, Content-Type, Accept, Auhtorization'"
         AllowCredentials: true
+
+  CustomDomain:
+    Type: AWS::ApiGateway::DomainName
+    Condition: CreateProdResources
+    Properties:
+      DomainName: !Ref AuthUrl
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !Ref RegionalCertificateArn
+      SecurityPolicy: TLS_1_2
+
+  CustomDomainMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Condition: CreateProdResources
+    Properties:
+      DomainName: !Ref AuthUrl
+      RestApiId: !Ref AuthApi
+      Stage: !Ref AuthApi.Stage
+    DependsOn:
+      - CustomDomain
 
   TokensPost:
     Type: AWS::Serverless::Function
@@ -103,7 +106,7 @@ Resources:
             RestApiId: !Ref AuthApi
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Sub ${AWS::StackName}-table
+            TableName: !Ref TableName
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref JwksSecret
 
@@ -126,7 +129,7 @@ Resources:
             RestApiId: !Ref AuthApi
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Sub ${AWS::StackName}-table
+            TableName: !Ref TableName
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref JwksSecret
 
@@ -144,7 +147,7 @@ Resources:
             RestApiId: !Ref AuthApi
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Sub ${AWS::StackName}-table
+            TableName: !Ref TableName
 
   LogoutPost:
     Type: AWS::Serverless::Function
@@ -160,7 +163,7 @@ Resources:
             RestApiId: !Ref AuthApi
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Sub ${AWS::StackName}-table
+            TableName: !Ref TableName
 
   Authorizer:
     Type: AWS::Serverless::Function
