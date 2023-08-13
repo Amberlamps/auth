@@ -165,6 +165,22 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref TableName
 
+  ClientsPost:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/clients
+      Handler: clients-post.handler
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /clients
+            Method: post
+            RestApiId: !Ref AuthApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TableName
+
   Authorizer:
     Type: AWS::Serverless::Function
     Properties:

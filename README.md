@@ -102,14 +102,26 @@ A helper function for backend endpoints could look like this:
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import * as z from "zod";
 
-const getUser = (event: APIGatewayProxyEvent) => {
-  const user = z
-    .object({
-        userId: z.string(),
-        name: z.string().optional(),
-        picture: z.string().optional(),
-    })
-    .parse(JSON.parse(event.requestContext.authorizer?.["user"] as string));
-  return user;
+const userAccessTokenSchema = z.object({
+  userId: z.string(),
+  name: z.string(),
+  picture: z.string().optional(),
+  type: z.literal("user"),
+});
+const clientAccessTokenSchema = z.object({
+  name: z.string(),
+  clientId: z.string(),
+  createdAt: z.number(),
+  type: z.literal("client"),
+});
+const accessTokenSchema = z.union([
+  userAccessTokenSchema,
+  clientAccessTokenSchema,
+]);
+
+const getEntity = (event: APIGatewayProxyEvent) => {
+  const entity = accessTokenSchema
+    .parse(JSON.parse(event.requestContext.authorizer?.["entity"] as string));
+  return entity;
 }
 ```

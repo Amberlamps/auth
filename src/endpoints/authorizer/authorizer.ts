@@ -6,7 +6,7 @@ import { Jwks, jwksSchema } from "../../types/jwks";
 import { loadSecrets } from "../../helpers/load-secrets";
 import { convertStoredToJwks } from "../jwks-rotation/create-jwk-stored-key";
 import * as jose from "jose";
-import { tokenDbSchema } from "../../types/tokens";
+import { accessTokenSchema } from "../../types/tokens";
 
 let jwks: Jwks | null = null;
 
@@ -52,14 +52,15 @@ export const handler: APIGatewayAuthorizerHandler = async (event) => {
                 accessToken,
                 jose.createLocalJWKSet(jwks),
             );
-            const tokenValidation = tokenDbSchema.safeParse(payload);
+            const tokenValidation = accessTokenSchema.safeParse(payload);
             if (!tokenValidation.success) {
                 console.error(tokenValidation.error);
                 throw new Error("Invalid token.");
             }
-            const { data: user } = tokenValidation;
+            const { data: entity } = tokenValidation;
             return {
-                principalId: user.userId,
+                principalId:
+                    entity.type === "user" ? entity.userId : entity.clientId,
                 policyDocument: {
                     Version: "2012-10-17",
                     Statement: [
@@ -71,7 +72,7 @@ export const handler: APIGatewayAuthorizerHandler = async (event) => {
                     ],
                 },
                 context: {
-                    user: JSON.stringify(user),
+                    entity: JSON.stringify(entity),
                 },
             };
         } catch (error) {

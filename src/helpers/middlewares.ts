@@ -18,7 +18,10 @@ export type PatchedEvent = Omit<APIGatewayProxyEvent, "body"> & {
     rawBody: string;
     rawHeaders: Record<string, string>;
 } & APIGatewayProxyEvent;
-type PatchedGatewayHandler = Handler<PatchedEvent, APIGatewayProxyResult>;
+export type PatchedGatewayHandler = Handler<
+    PatchedEvent,
+    APIGatewayProxyResult
+>;
 
 export default function middlewares(
     handler: PatchedGatewayHandler,

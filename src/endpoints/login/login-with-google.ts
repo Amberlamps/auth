@@ -45,10 +45,14 @@ const loginWithGoogle = async (
         picture,
     };
     const id = await persistTokenDb(token);
-    const accessToken = await createAccessToken(token);
+    const accessToken = await createAccessToken({
+        ...token,
+        type: "user",
+    });
     return ok<TokenResponse>(
         {
             accessToken,
+            type: "user",
             user: token,
         },
         {

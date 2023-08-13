@@ -25,3 +25,5 @@ export const awsSecretSchema = z.object({
     smtpPassword: z.string(),
 });
 export type AwsSecret = z.infer<typeof awsSecretSchema>;
+
+export const idSchema = z.string().length(26);
