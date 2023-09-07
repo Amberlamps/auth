@@ -17,7 +17,7 @@ paths:
               $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: Login was successful. Access token is returned
+          description: Login was successful. Access token is returned.
           content:
             application/json:
               schema:
