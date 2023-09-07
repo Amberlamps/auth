@@ -1,5 +1,5 @@
 {
-    "name": "auth-api",
+    "name": "auth-api-http-client",
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
@@ -15,7 +15,7 @@
         "@types/got": "^9.6.12",
         "@types/http-errors": "^2.0.1",
         "@types/jsonwebtoken": "^9.0.2",
-        "@types/lodash": "^4.14.195",
+        "@types/lodash": "^4.14.198",
         "@types/ms": "^0.7.31",
         "@types/node": "^20.4.2",
         "@typescript-eslint/eslint-plugin": "^6.1.0",

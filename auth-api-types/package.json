@@ -1,0 +1,26 @@
+{
+    "name": "auth-api-types",
+    "version": "1.0.0",
+    "description": "",
+    "scripts": {
+        "generate": "openapi-typescript ./openapi.yaml --output ./src/index.ts  && tsc ./src/index.ts --lib ESNext --outDir ./dist --noEmit false --declaration true",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "openapi-typescript": "^6.5.4",
+        "typescript": "^5.2.2"
+    },
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "types": "./dist/index.d.ts",
+    "publishConfig": {
+        "access": "public"
+    },
+    "files": [
+        "dist"
+    ]
+}

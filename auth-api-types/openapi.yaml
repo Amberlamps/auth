@@ -1,0 +1,204 @@
+openapi: 3.0.3
+
+info:
+  title: bot41 api
+  version: 1.0.0
+
+paths:
+  /login:
+    post:
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login was successful. Access token is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+  /tokens:
+    post:
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrantType'
+      responses:
+        '200':
+          description: Access token was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+  /me:
+    get:
+      tags:
+        - auth
+      responses:
+        '200':
+          description: User object is returned according to cookie value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /logout:
+    post:
+      tags:
+        - auth
+      responses:
+        '200':
+          description: All tokens are deleted for given user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+  /clients:
+    post:
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientPostRequest'
+      responses:
+        '200':
+          description: Client was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientPostResponse'
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - google
+        code:
+          type: string
+      required:
+        - type
+        - code
+    LogoutResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    Client:
+      type: object
+      properties:
+        createdAt:
+          type: number
+        name:
+          type: string
+        clientId:
+          type: string
+      required:
+        - createdAt
+        - name
+        - clientId
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+        picture:
+          type: string
+        userId:
+          type: string
+      required:
+        - name
+        - userId
+    ClientTokenResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - client
+        accessToken:
+          type: string
+        client:
+          $ref: '#/components/schemas/Client'
+      required:
+        - type
+        - accessToken
+        - client
+    UserTokenResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - user
+        accessToken:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - type
+        - accessToken
+        - user
+    TokenResponse:
+      oneOf:
+        - $ref: '#/components/schemas/ClientTokenResponse'
+        - $ref: '#/components/schemas/UserTokenResponse'
+    CodeGrantType:
+      type: object
+      properties:
+        grant_type:
+          type: string
+          enum:
+            - authorization_code
+      required:
+        - grant_type
+    ClientCredentialsGrantType:
+      type: object
+      properties:
+        grant_type:
+          type: string
+          enum:
+            - client_credentials
+        client_id:
+          type: string
+        client_secret:
+          type: string
+      required:
+        - grant_type
+        - client_id
+        - client_secret
+    GrantType:
+      oneOf:
+        - $ref: '#/components/schemas/CodeGrantType'
+        - $ref: '#/components/schemas/ClientCredentialsGrantType'
+    ClientPostRequest:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+    ClientPostResponse:
+      allOf:
+        - $ref: '#/components/schemas/Client'
+        - type: object
+          properties:
+            clientSecret:
+              type: string
+          required:
+            - clientSecret

@@ -31,6 +31,7 @@ export const login = async (loginPost: LoginGoogle): Promise<TokenResponse> => {
         throw new Error("Unknown error");
     }
 };
+
 export const fetchToken = async (
     tokenPost: TokenPost,
 ): Promise<TokenResponse> => {

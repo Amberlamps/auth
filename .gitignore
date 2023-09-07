@@ -56,3 +56,5 @@ out
 commands.md
 
 secret.json
+
+auth-api-types/src

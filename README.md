@@ -48,7 +48,7 @@ sam build -t table-production.yaml && sam deploy \
 | CookieExpiresIn | No | Expiration time of the cookie | 315360000 (10 years) |
 | TokenExpiresIn | No | Expiration time of the access token | 15m (15 minutes; https://github.com/vercel/ms) |
 | AuthorizerName | Yes | Name of the exported authorizer function | bot41-auth-api-dev-authorizer |
-| RegionalCertificateArn | Yes in production | Arn of the certificate for the custom domain |  |
+| RegionalCertificateArn | Yes in production | Arn of the certificate for the custom domain (api.example.com) |  |
 
 **Development**
 
@@ -80,26 +80,32 @@ sam build && sam deploy \
 
 ### Backend
 
-The contents of the user token is described as:
+The contents of the access token is described as:
 
 ```typescript
-type User = {
-  userId: string;
-  name?: string;
-  picture?: string;
+type AccessToken = {
+    type: "user";
+    userId: string;
+    name: string;
+    picture?: string | undefined;
+} | {
+    createdAt: number;
+    type: "client";
+    name: string;
+    clientId: string;
 }
 ```
 
-The user object is stored in the authorizer context:
+The entity object is stored in the authorizer context:
 
 ```typescript
-event.requestContext.authorizer.user
+event.requestContext.authorizer.entity
 ```
 
 A helper function for backend endpoints could look like this:
 
 ```typescript
-import { APIGatewayProxyEvent } from 'aws-lambda';
+import { APIGatewayProxyEvent } from "aws-lambda";
 import * as z from "zod";
 
 const userAccessTokenSchema = z.object({
