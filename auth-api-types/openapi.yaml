@@ -34,7 +34,7 @@ paths:
               $ref: '#/components/schemas/GrantType'
       responses:
         '200':
-          description: Access token was successfully created
+          description: Access token was successfully created.
           content:
             application/json:
               schema:
