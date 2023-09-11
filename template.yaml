@@ -60,6 +60,10 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: prod
+      Auth:
+        Authorizers:
+          AuthApiAuthorizer:
+            FunctionArn: !GetAtt Authorizer.Arn
       Cors:
         AllowMethods: "'POST, GET, OPTIONS, DELETE, PUT, PATCH'"
         AllowOrigin: !Sub 
@@ -177,6 +181,8 @@ Resources:
             Path: /clients
             Method: post
             RestApiId: !Ref AuthApi
+            Auth:
+              Authorizer: AuthApiAuthorizer
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TableName
