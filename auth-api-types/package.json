@@ -1,6 +1,6 @@
 {
     "name": "auth-api-types",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "",
     "scripts": {
         "generate": "openapi-typescript ./openapi.yaml --output ./src/index.ts  && tsc ./src/index.ts --lib ESNext --outDir ./dist --noEmit false --declaration true",
