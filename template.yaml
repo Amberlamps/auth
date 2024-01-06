@@ -45,7 +45,7 @@ Conditions:
 
 Globals:
   Function:
-    Runtime: nodejs16.x
+    Runtime: nodejs18.x
     Environment:
       Variables:
         TABLE_NAME: !Ref TableName
@@ -111,6 +111,25 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TableName
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref JwksSecret
+
+  SecurityTokensPost:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/security-tokens
+      Handler: security-tokens-post.handler
+      Environment:
+        Variables:
+          JWKS_SECRET_NAME: !Sub ${AWS::StackName}-jwks
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /security-tokens
+            Method: post
+            RestApiId: !Ref AuthApi
+      Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref JwksSecret
 

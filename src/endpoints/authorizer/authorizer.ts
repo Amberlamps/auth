@@ -2,28 +2,8 @@ import {
     APIGatewayAuthorizerHandler,
     APIGatewayAuthorizerResult,
 } from "aws-lambda";
-import { Jwks, jwksSchema } from "../../types/jwks";
-import { loadSecrets } from "../../helpers/load-secrets";
-import { convertStoredToJwks } from "../jwks-rotation/create-jwk-stored-key";
-import * as jose from "jose";
-import { accessTokenSchema } from "../../types/tokens";
-
-let jwks: Jwks | null = null;
-
-const getJwks = async (): Promise<Jwks> => {
-    if (jwks) {
-        return jwks;
-    }
-    const envJwks = process.env["JWKS"];
-    if (envJwks) {
-        jwks = jwksSchema.parse(JSON.parse(envJwks));
-        return jwks;
-    } else {
-        const secrets = await loadSecrets();
-        const jwks = await convertStoredToJwks(secrets);
-        return jwks;
-    }
-};
+import { AccessToken } from "../../types/tokens";
+import verifyAccessToken from "../../helpers/verify-access-token";
 
 const deniedAccess: APIGatewayAuthorizerResult = {
     policyDocument: {
@@ -39,28 +19,27 @@ const deniedAccess: APIGatewayAuthorizerResult = {
     principalId: "unauthorized",
 };
 
+const getPrincipalId = (accessToken: AccessToken): string => {
+    if (accessToken.type === "user") {
+        return accessToken.userId;
+    } else if (accessToken.type === "security-token") {
+        return accessToken.securityTokenId;
+    } else {
+        return accessToken.clientId;
+    }
+};
+
 export const handler: APIGatewayAuthorizerHandler = async (event) => {
     if (event.type === "TOKEN") {
         try {
-            const jwks = await getJwks();
             const [, accessToken] = event.authorizationToken.split(" ");
             if (!accessToken) {
                 console.error("No bearer access token provided");
                 return deniedAccess;
             }
-            const { payload } = await jose.jwtVerify(
-                accessToken,
-                jose.createLocalJWKSet(jwks),
-            );
-            const tokenValidation = accessTokenSchema.safeParse(payload);
-            if (!tokenValidation.success) {
-                console.error(tokenValidation.error);
-                throw new Error("Invalid token.");
-            }
-            const { data: entity } = tokenValidation;
+            const entity = await verifyAccessToken(accessToken);
             return {
-                principalId:
-                    entity.type === "user" ? entity.userId : entity.clientId,
+                principalId: getPrincipalId(entity),
                 policyDocument: {
                     Version: "2012-10-17",
                     Statement: [

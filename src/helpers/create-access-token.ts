@@ -3,10 +3,18 @@ import { getStringFromEnv } from "./get-env-variables";
 import * as jose from "jose";
 import { loadCurrentSecret } from "./load-secrets";
 
-const tokenExpiresIn = getStringFromEnv("TOKEN_EXPIRES_IN");
+const tokenExpiresInEnv = getStringFromEnv("TOKEN_EXPIRES_IN");
 const authUrl = getStringFromEnv("AUTH_URL");
 
-const createAccessToken = async (accessToken: AccessToken): Promise<string> => {
+interface AccessTokenOptions {
+    tokenExpiresIn?: string;
+}
+
+const createAccessToken = async (
+    accessToken: AccessToken,
+    options: AccessTokenOptions = {},
+): Promise<string> => {
+    const { tokenExpiresIn = tokenExpiresInEnv } = options;
     const currentSecret = await loadCurrentSecret();
     const ecPrivateKey = await jose.importPKCS8(
         currentSecret.privateKey,

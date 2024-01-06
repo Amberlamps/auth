@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { clientSchema } from "./clients";
+import { securityTokenSchema } from "./security-tokens";
 
 const codeGrantTypeSchema = z.object({
     grant_type: z.literal("authorization_code"),
@@ -40,9 +41,16 @@ const userTokenResponseSchema = z.object({
     type: z.literal("user"),
 });
 
+const securityTokenResponseSchema = z.object({
+    accessToken: z.string(),
+    securityToken: securityTokenSchema,
+    type: z.literal("security-token"),
+});
+
 export const tokenResponseSchema = z.union([
     clientTokenResponseSchema,
     userTokenResponseSchema,
+    securityTokenResponseSchema,
 ]);
 export type TokenResponse = z.infer<typeof tokenResponseSchema>;
 
@@ -52,9 +60,13 @@ const userAccessTokenSchema = tokenDbSchema.extend({
 const clientAccessTokenSchema = clientSchema.extend({
     type: z.literal("client"),
 });
+const securityTokenAccessTokenSchema = securityTokenSchema.extend({
+    type: z.literal("security-token"),
+});
 
 export const accessTokenSchema = z.union([
     userAccessTokenSchema,
     clientAccessTokenSchema,
+    securityTokenAccessTokenSchema,
 ]);
 export type AccessToken = z.infer<typeof accessTokenSchema>;

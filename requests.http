@@ -2,7 +2,9 @@
 
 @userCookie = c5fe7d87fa6d5df367ac9a2c88455db2fda841b2be6a3175173daeacd2c38a8f
 
-@token = eyJhbGciOiJSUzI1NiIsImtpZCI6InJVS2tDWUwwZUtRb2hFNEFDNHBuIn0.eyJ1c2VySWQiOiIxY2IyNzNmMjVlNjNkYzdjYjNmZGVkNjgxZGI4M2U1ZTMyNGI4NTM1YjIwNjRjYTY4NWI1MTNlNjQ1NGQzMTFmIiwibmFtZSI6IkFsZXhhbmRlciBCZWhyZW5zIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FBY0hUdGRmR3N3cHc3OUJpbnZGLWc2Ml9jZ0Y0ODRGQWFxNEJyQloyZWNTdldlZjNJVT1zOTYtYyIsInR5cGUiOiJ1c2VyIiwiaWF0IjoxNjk0NDYxODY0LCJpc3MiOiIxdWtmNjJzY2c3LmV4ZWN1dGUtYXBpLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tIiwiZXhwIjoxNjk0NDYyNzY0fQ.il-J-hVj3BFDJkBdLH4P9N1Ym2OadjeL8njNWm3wKpFz18BPAzhxY3z7o3gv5SNyQSMvH-XvEHGbCNpv7bBgjZ1t54M_bSzdBClg1bcnAULhtPCAzQ7b5Xi5lRpl6Dh7lJJ06Vf79WKWWve6OzIdXCs_GNXZTf7SirKV8pGchRWIPsXp5TISKLes-IqAtEBGTguxW5jnIrYw6W8jln1QaCS2uium6bn90IKWA60L09E4AuDrDklrGN0DZoG5mwjJFQRgcSWjAySnyrISYXBKIpWF6NAD9c4-e4Fu9Fb_xn78LXT4JKWHI677Yx5ra0LKniT4zfzN80WSDWeFiS35uA
+@token = eyJhbGciOiJSUzI1NiIsImtpZCI6Ik9aYXMyaTNwdDlYN1Q2SUE4UWFvIn0.eyJ0eXBlIjoiY2xpZW50IiwiY2xpZW50SWQiOiIwMUhEUFFQUUJKNjFOR0Y4TkVCS1JTUDQzVyIsImNyZWF0ZWRBdCI6MTY5ODM0ODg4MzMxNCwibmFtZSI6IlNsYWNrIChkZXZlbG9wbWVudCkiLCJpYXQiOjE3MDQ1NzEzNzgsImlzcyI6IjF1a2Y2MnNjZzcuZXhlY3V0ZS1hcGkuZXUtY2VudHJhbC0xLmFtYXpvbmF3cy5jb20iLCJleHAiOjE3MzYxMjg5Nzh9.TqSRYeQmX2f31HjYBfMU6XlxSe7oyPrjX2KFOik4dLG8Cx75uUlsLT1Ie8IVYMYFa--aaOIai5mxiGdU5yhii_K7Svj90dDZtJ9KPFjYLzhEKvq5dSYlL9t0FlYB7qX1hFCzOymk3b00IxqyXZzQgaH9Eu98iUEzhOoteWzWZbRrCaJSjGinmO2UiIfrN18I40rubLvE-oA_tjKn5gYYRhdhu3KT8moIvOrwBji5cUwzteE94zLChza5XFprK8d8jIh6ZsqndqQ4bTOJ15AUw4ynWTa9vXhIfq27Xx8MLXdO9Bsh2jtsPaAyFKOMnZpXhwYOyCGd6jTnAFF_wMSzbw
+
+@clientToken = eyJhbGciOiJSUzI1NiIsImtpZCI6Ik9aYXMyaTNwdDlYN1Q2SUE4UWFvIn0.eyJ0eXBlIjoiY2xpZW50IiwiY2xpZW50SWQiOiIwMUhEUFFQUUJKNjFOR0Y4TkVCS1JTUDQzVyIsImNyZWF0ZWRBdCI6MTY5ODM0ODg4MzMxNCwibmFtZSI6IlNsYWNrIChkZXZlbG9wbWVudCkiLCJpYXQiOjE3MDQ1MjczNzMsImlzcyI6IjF1a2Y2MnNjZzcuZXhlY3V0ZS1hcGkuZXUtY2VudHJhbC0xLmFtYXpvbmF3cy5jb20iLCJleHAiOjE3MzYwODQ5NzN9.g9o3mmSEqkEkcH-Kk8xMpC0vbcwvd9uopO3qij7ZAjOoJvoxz28hyES76KXfCqh1eMgnJaf2bO1jJ4j4o7DEESN3cF2MO5YTDEYI2UKZfhVMPCklaMBeYWps9ZbM_T-44lF4LnDeRPUPxm8xijRh86oT00xDKE0abhn-jazBLnZPmuKLIREku23JBfQaoti7ewtBh4SQB9HxJlfoiLbKMrqKUvyndF4q087iSkCVzRtDLTs6b8C5DXfZim8hDEAw3OwKCvkFXEqqdJD2Q8KatK-altiA04OgMk2HtEw33zY1WsyU84fmOqyv7Dkv4gwBMhhRHJA0JFHascqRxrmr2w
 
 
 ###
@@ -34,7 +36,7 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "Test Client"
+    "name": "Data exports security client"
 }
 
 ###
@@ -43,7 +45,20 @@ POST {{authUrl}}/tokens
 Content-Type: application/json
 
 {
-    "client_id": "01H7PK2NWXA32Z9D20J6K23Q8C",
-    "client_secret": "d39447a54c152089004da41cc4e83c00bdbb6296fd317e8990e773f02a22281e",
+    "client_id": "01HDPQPQBJ61NGF8NEBKRSP43W",
+    "client_secret": "33f955bbe540fc7da22c00e3f17daba6b5e8e59322b2bee7e7f29af39003b5c7",
     "grant_type": "client_credentials"
+}
+
+### Get security token
+
+POST {{authUrl}}/security-tokens
+Content-Type: application/json
+Authorization: Bearer {{clientToken}}
+
+{
+    "expiresIn": "30m",
+    "body": {
+        "datasourceId": "xxx"
+    }
 }

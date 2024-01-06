@@ -72,12 +72,29 @@ paths:
             schema:
               $ref: '#/components/schemas/ClientPostRequest'
       responses:
-        '200':
+        '201':
           description: Client was successfully created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ClientPostResponse'
+  /security-tokens:
+    post:
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecurityTokensPost'
+      responses:
+        '201':
+          description: Security tokens were successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityTokenResponse'
 components:
   schemas:
     LoginRequest:
@@ -154,10 +171,45 @@ components:
         - type
         - accessToken
         - user
+    SecurityToken:
+      type: object
+      properties:
+        body:
+          type: object
+          additionalProperties: true
+        securityTokenId:
+          type: string
+        expiresIn:
+          oneOf:
+            - type: string
+            - type: number
+        clientId:
+          type: string
+      required:
+        - idToken
+        - accessToken
+        - refreshToken
+        - expiresAt
+    SecurityTokenResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - security-token
+        accessToken:
+          type: string
+        securityToken:
+          $ref: '#/components/schemas/SecurityToken'
+      required:
+        - type
+        - accessToken
+        - securityToken
     TokenResponse:
       oneOf:
         - $ref: '#/components/schemas/ClientTokenResponse'
         - $ref: '#/components/schemas/UserTokenResponse'
+        - $ref: '#/components/schemas/SecurityTokenResponse'
     CodeGrantType:
       type: object
       properties:
@@ -202,3 +254,16 @@ components:
               type: string
           required:
             - clientSecret
+    SecurityTokensPost:
+      type: object
+      properties:
+        body:
+          type: object
+          additionalProperties: true
+        expiresIn:
+          oneOf:
+            - type: string
+            - type: number
+      required:
+        - body
+        - expiresIn
