@@ -1,7 +1,6 @@
 import middlewares from "../../helpers/middlewares";
 import { created } from "../../helpers/http-responses";
 import validateSchema from "../../helpers/validate-schema";
-import { ulid } from "ulid";
 import {
     SecurityToken,
     securityTokensPostSchema,
@@ -9,6 +8,10 @@ import {
 import verifyAccessToken from "../../helpers/verify-access-token";
 import { TokenResponse } from "../../types/tokens";
 import createAccessToken from "../../helpers/create-access-token";
+import { getStringFromEnv } from "../../helpers/get-env-variables";
+import { ulid } from "ulid";
+
+const securityTokenExpiresIn = getStringFromEnv("SECURITY_TOKEN_EXPIRES_IN");
 
 export const handler = middlewares(async (event) => {
     const authorizationHeader = event.headers["authorization"];
@@ -39,7 +42,6 @@ export const handler = middlewares(async (event) => {
     const securityToken: SecurityToken = {
         securityTokenId,
         body: securityTokensPost.body,
-        expiresIn: securityTokensPost.expiresIn,
         clientId: accessToken.clientId,
     };
     const securityAccessToken = await createAccessToken(
@@ -48,7 +50,8 @@ export const handler = middlewares(async (event) => {
             ...securityToken,
         },
         {
-            tokenExpiresIn: "30m",
+            tokenExpiresIn:
+                securityTokensPost.expiresIn || securityTokenExpiresIn,
         },
     );
     return created<TokenResponse>({

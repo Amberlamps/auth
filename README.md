@@ -47,6 +47,7 @@ sam build -t table-production.yaml && sam deploy \
 | CookieName | No | Name of the cookie | r_id |
 | CookieExpiresIn | No | Expiration time of the cookie | 315360000 (10 years) |
 | TokenExpiresIn | No | Expiration time of the access token | 15m (15 minutes; https://github.com/vercel/ms) |
+| SecurityTokenExpiresIn | No | Expiration time of the security token | 15m (15 minutes; https://github.com/vercel/ms) |
 | AuthorizerName | Yes | Name of the exported authorizer function | bot41-auth-api-dev-authorizer |
 | RegionalCertificateArn | Yes in production | Arn of the certificate for the custom domain (api.example.com) |  |
 

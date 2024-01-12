@@ -7,7 +7,7 @@ const tokenExpiresInEnv = getStringFromEnv("TOKEN_EXPIRES_IN");
 const authUrl = getStringFromEnv("AUTH_URL");
 
 interface AccessTokenOptions {
-    tokenExpiresIn?: string;
+    tokenExpiresIn?: string | number;
 }
 
 const createAccessToken = async (

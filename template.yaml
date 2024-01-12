@@ -29,6 +29,9 @@ Parameters:
   TokenExpiresIn:
     Type: String
     Default: 15m
+  SecurityTokenExpiresIn:
+    Type: String
+    Default: 15m
   AuthorizerName:
     Type: String
   RegionalCertificateArn:
@@ -54,6 +57,7 @@ Globals:
         COOKIE_NAME: !Ref CookieName
         COOKIE_EXPIRES_IN: !Ref CookieExpiresIn
         TOKEN_EXPIRES_IN: !Ref TokenExpiresIn
+        SECURITY_TOKEN_EXPIRES_IN: !Ref SecurityTokenExpiresIn
   
 Resources:
   AuthApi:
