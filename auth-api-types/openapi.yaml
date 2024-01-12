@@ -266,4 +266,3 @@ components:
             - type: number
       required:
         - body
-        - expiresIn
