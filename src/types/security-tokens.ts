@@ -12,5 +12,5 @@ export const securityTokensPostSchema = securityTokenSchema
         body: true,
     })
     .extend({
-        expiresIn: z.union([z.number().positive(), z.string()]),
+        expiresIn: z.union([z.number().positive(), z.string()]).optional(),
     });
