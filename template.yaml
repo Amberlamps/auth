@@ -40,11 +40,16 @@ Parameters:
     Default: not_set_in_development
   TableName:
     Type: String
+  JwksSecretArn:
+    Type: String
 
 Conditions:
   CreateProdResources: !Equals 
     - !Ref EnvType
     - production
+  IsUSEast1OrDev: !Or
+    - !Equals [ !Ref "AWS::Region", "us-east-1" ]
+    - !Equals [ !Ref EnvType, "development" ]
 
 Globals:
   Function:
@@ -116,7 +121,7 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref TableName
         - AWSSecretsManagerGetSecretValuePolicy:
-            SecretArn: !Ref JwksSecret
+            SecretArn: !Ref JwksSecretArn
 
   SecurityTokensPost:
     Type: AWS::Serverless::Function
@@ -135,7 +140,7 @@ Resources:
             RestApiId: !Ref AuthApi
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
-            SecretArn: !Ref JwksSecret
+            SecretArn: !Ref JwksSecretArn
 
   LoginPost:
     Type: AWS::Serverless::Function
@@ -158,7 +163,7 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref TableName
         - AWSSecretsManagerGetSecretValuePolicy:
-            SecretArn: !Ref JwksSecret
+            SecretArn: !Ref JwksSecretArn
 
   MeGet:
     Type: AWS::Serverless::Function
@@ -204,8 +209,6 @@ Resources:
             Path: /clients
             Method: post
             RestApiId: !Ref AuthApi
-            Auth:
-              Authorizer: AuthApiAuthorizer
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TableName
@@ -221,10 +224,11 @@ Resources:
           JWKS_SECRET_NAME: !Sub ${AWS::StackName}-jwks
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
-            SecretArn: !Ref JwksSecret
+            SecretArn: !Ref JwksSecretArn
 
   JwksRotationFunc:
     Type: AWS::Serverless::Function
+    Condition: IsUSEast1OrDev
     Properties:
       CodeUri: dist/jwks-rotation
       Handler: jwks-rotation.handler
@@ -249,20 +253,23 @@ Resources:
               Resource: !GetAtt Authorizer.Arn
 
   JwksLambdaInvokePermission:
-      Type: AWS::Lambda::Permission
-      DependsOn: JwksRotationFunc
-      Properties:
-        FunctionName: !GetAtt JwksRotationFunc.Arn
-        Action: lambda:InvokeFunction
-        Principal: 'secretsmanager.amazonaws.com'
+    Type: AWS::Lambda::Permission
+    Condition: IsUSEast1OrDev
+    DependsOn: JwksRotationFunc
+    Properties:
+      FunctionName: !GetAtt JwksRotationFunc.Arn
+      Action: lambda:InvokeFunction
+      Principal: 'secretsmanager.amazonaws.com'
 
   JwksSecret:
     Type: AWS::SecretsManager::Secret
+    Condition: IsUSEast1OrDev
     Properties:
       Name: !Sub ${AWS::StackName}-jwks
 
   JwksRotationSchedule:
     Type: AWS::SecretsManager::RotationSchedule
+    Condition: IsUSEast1OrDev
     Properties:
       SecretId: !Ref JwksSecret
       RotationLambdaARN: !GetAtt JwksRotationFunc.Arn
