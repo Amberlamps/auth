@@ -70,3 +70,9 @@ export const accessTokenSchema = z.union([
     securityTokenAccessTokenSchema,
 ]);
 export type AccessToken = z.infer<typeof accessTokenSchema>;
+
+const googleTokenIdResponseSchema = z.object({
+    accessToken: z.string(),
+    refreshToken: z.string(),
+});
+export type GoogleTokenIdResponse = z.infer<typeof googleTokenIdResponseSchema>;

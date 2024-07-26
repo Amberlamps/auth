@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "esbuild": "esbuild ./src/endpoints/**/* --bundle --outdir=dist --platform=node",
+        "esbuild": "esbuild ./src/endpoints/authorizer/authorizer.ts ./src/endpoints/clients/clients-post ./src/endpoints/jwks-rotation/create-jwk-stored-key.ts ./src/endpoints/jwks-rotation/jwks-rotation.ts ./src/endpoints/login/login-post.ts ./src/endpoints/login/login-with-google-token-id.ts ./src/endpoints/login/login-with-google.ts ./src/endpoints/logout/logout-post.ts ./src/endpoints/me/me-get.ts ./src/endpoints/security-tokens/security-tokens-post.ts ./src/endpoints/tokens/tokens-post.ts --bundle --outdir=dist --platform=node",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],

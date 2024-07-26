@@ -50,6 +50,7 @@ sam build -t table-production.yaml && sam deploy \
 | SecurityTokenExpiresIn | No | Expiration time of the security token | 15m (15 minutes; https://github.com/vercel/ms) |
 | AuthorizerName | Yes | Name of the exported authorizer function | bot41-auth-api-dev-authorizer |
 | RegionalCertificateArn | Yes in production | Arn of the certificate for the custom domain (api.example.com) |  |
+| JwksSecretArn | Yes | Arn of the JWKS secret |
 
 **Development**
 
@@ -61,8 +62,10 @@ sam build && sam deploy \
   --profile feedme \
   --s3-bucket bot41-eu-central-1 \
   --s3-prefix auth-api-dev \
-  --parameter-overrides ParameterKey=AppUrl,ParameterValue=http://localhost:3000 ParameterKey=AuthUrl,ParameterValue=api.bot41.com ParameterKey=GoogleClientId,ParameterValue=xxx.apps.googleusercontent.com ParameterKey=GoogleClientSecret,ParameterValue=xxx ParameterKey=AuthorizerName,ParameterValue=bot41-auth-api-dev-authorizer ParameterKey=TableName,ParameterValue=bot41-auth-table-dev
+  --parameter-overrides ParameterKey=AppUrl,ParameterValue=http://localhost:3000 ParameterKey=AuthUrl,ParameterValue=api.bot41.com ParameterKey=GoogleClientId,ParameterValue=xxx.apps.googleusercontent.com ParameterKey=GoogleClientSecret,ParameterValue=xxx ParameterKey=AuthorizerName,ParameterValue=bot41-auth-api-dev-authorizer ParameterKey=TableName,ParameterValue=bot41-auth-table-dev ParameterKey=JwksSecretArn,ParameterValue=*
 ```
+
+**Note:** Replace `JwksSecretArn` with its actual value after the stack was successfully deployed
 
 **Production**
 
