@@ -56,6 +56,7 @@ const loginWithGoogleTokenId = async (
     return ok<GoogleTokenIdResponse>({
         accessToken,
         refreshToken,
+        user: token,
     });
 };
 

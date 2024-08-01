@@ -74,5 +74,6 @@ export type AccessToken = z.infer<typeof accessTokenSchema>;
 const googleTokenIdResponseSchema = z.object({
     accessToken: z.string(),
     refreshToken: z.string(),
+    user: tokenDbSchema,
 });
 export type GoogleTokenIdResponse = z.infer<typeof googleTokenIdResponseSchema>;
